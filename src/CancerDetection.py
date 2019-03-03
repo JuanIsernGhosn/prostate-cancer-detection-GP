@@ -32,12 +32,12 @@ def gp_cross_val(data):
         for part in partition(list(range(0,train_neg.shape[0])), 4):
             X = np.concatenate((train_neg[part],train_pos))
             Y = np.append([-1] * len(part),np.ones(len(train_pos)))
-            Y.reshape(-1, 1)
+            Y = Y.reshape(-1, 1)
 
             idx = np.random.permutation(len(X))
             X, Y = X[idx], Y[idx]
 
-            m = gp.models.SVGP(X=X, Y=Y, kern=gp.kernels.Linear, likelihood=gp.likelihoods.Gaussian)
+            m = gp.models.SVGP(X=X, Y=Y, kern=gp.kernels.Linear, likelihood=gp.likelihoods.Gaussian, Z = X.copy())
             m.feature.set_trainable(False)
             gp.train.ScipyOptimizer().minimize(m, maxiter=20)
             m.feature.set_trainable(True)
