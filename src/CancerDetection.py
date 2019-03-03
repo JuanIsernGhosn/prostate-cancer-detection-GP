@@ -32,6 +32,7 @@ def gp_cross_val(data):
         for part in partition(list(range(0,train_neg.shape[0])), 4):
             X = np.concatenate((train_neg[part],train_pos))
             Y = np.append([-1] * len(part),np.ones(len(train_pos)))
+            Y.reshape(-1, 1)
 
             idx = np.random.permutation(len(X))
             X, Y = X[idx], Y[idx]
