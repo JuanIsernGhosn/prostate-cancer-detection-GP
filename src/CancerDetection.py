@@ -1,6 +1,6 @@
 import scipy.io
 import numpy as np
-from sklearn import metrics
+from sklearn.metrics import roc_curve, auc
 import random
 import gpflow as gp
 
@@ -16,7 +16,11 @@ def gp_cross_val(data):
     negative_ex = data['Healthy_folds'].flatten()
     positive_ex = data['Malign_folds'].flatten()
 
-    for i in range(0,5):
+    tpr = []
+    fpr = []
+    roc_auc = []
+
+    for f, i in enumerate(range(0,5)):
         train_index = list(range(0,5))
         train_index.remove(i)
 
@@ -28,6 +32,7 @@ def gp_cross_val(data):
         x_test = np.concatenate((test_neg, test_pos))
         y_test = np.append([-1] * test_neg.shape[0], np.ones(test_pos.shape[0]))
 
+        probs_fold = []
 
         for part in partition(list(range(0,train_neg.shape[0])), 4):
             x = np.concatenate((train_neg[part],train_pos))
@@ -41,9 +46,18 @@ def gp_cross_val(data):
 
             gp.train.ScipyOptimizer().minimize(m, maxiter=300)
 
-            p = m.predict_y(x_test)
+            p = m.predict_y(x_test)[0]
 
-            print(p)
+            probs_fold.append(p)
+
+        mean_probs = np.mean(probs_fold, axis=0).flatten()
+
+        tpr_v, fpr_v = roc_curve(y_test, mean_probs, 1)
+        tpr.append(tpr_v)
+        fpr.append(fpr_v)
+        roc_auc.append(auc(fpr_v, tpr_v))
+
+        print(mean_probs)
 
 
 
