@@ -25,28 +25,25 @@ def gp_cross_val(data):
 
         test_neg = negative_ex[i][0]
         test_pos = positive_ex[i][0]
-        X_test = np.concatenate((test_neg, test_pos))
-        Y_test = np.append([-1] * test_neg.shape[0], np.ones(test_pos.shape[0]))
+        x_test = np.concatenate((test_neg, test_pos))
+        y_test = np.append([-1] * test_neg.shape[0], np.ones(test_pos.shape[0]))
 
 
         for part in partition(list(range(0,train_neg.shape[0])), 4):
-            X = np.concatenate((train_neg[part],train_pos))
-            Y = np.append([-1] * len(part),np.ones(len(train_pos)))
-            Y = Y.reshape(-1, 1)
+            x = np.concatenate((train_neg[part],train_pos))
+            y = np.append([-1] * len(part),np.ones(len(train_pos)))
+            y = y.reshape(-1, 1)
 
-            idx = np.random.permutation(len(X))
-            X, Y = X[idx], Y[idx]
+            idx = np.random.permutation(len(x))
+            x, y = x[idx], y[idx]
 
-            m = gp.models.SVGP(X=X, Y=Y, kern=gp.kernels.Linear, likelihood=gp.likelihoods.Gaussian, Z = X.copy())
-            m.feature.set_trainable(False)
-            gp.train.ScipyOptimizer().minimize(m, maxiter=20)
-            m.feature.set_trainable(True)
-            gp.train.ScipyOptimizer(options=dict(maxiter=200)).minimize(m)
+            m = gp.models.VGP(X=x, Y=y, kern=gp.kernels.RBF(x.shape[1]), likelihood=gp.likelihoods.Bernoulli())
 
+            gp.train.ScipyOptimizer().minimize(m, maxiter=300)
 
-            p = m.predict_y(X_test)
+            p = m.predict_y(x_test)
 
-            print("hola")
+            print(p)
 
 
 
