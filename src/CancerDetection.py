@@ -1,57 +1,51 @@
-import scipy.io
+from scipy import io, stats
 import numpy as np
-from sklearn import preprocessing, metrics
+from sklearn import metrics, preprocessing
 import random
 import gpflow as gp
 import _pickle as cPickle
-from itertools import cycle
 import matplotlib.pyplot as plt
 
 DATA_PATH = '../Datos.mat'
 
 def __main__():
-    '''
+
     neg_fold, pos_fold = read_mat(DATA_PATH)
-    neg_fold_norm = norm_data(neg_fold)
-    pos_fold_norm = norm_data(pos_fold)
+    neg_fold_norm, pos_fold_norm = norm_data(neg_fold, pos_fold)
 
     auc = gp_cross_val(neg_fold_norm, pos_fold_norm)
 
-    write_data(auc, "auc_linear.pkl")
-    '''
+    write_data(auc, "auc.pkl")
+    fpr, tpr, tresholds = read_data("auc.pkl")
 
-
-
-    fpr, tpr, tresholds = read_data("auc_linear.pkl")
-
-    plt.figure()
-    lw = 2
-    plt.plot(fpr[1], tpr[1], color='darkorange',
-             lw=lw, label='ROC curve')
-    plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.05])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title('Receiver operating characteristic example')
-    plt.legend(loc="lower right")
-    plt.show()
-
-    #plot_roc(fpr, tpr)
+    plot_roc(fpr, tpr)
 
 
 def plot_roc(fpr_folds, tpr_folds):
-
     plt.figure()
-
     for fpr, tpr in zip(fpr_folds, tpr_folds ):
         plt.plot(fpr, tpr)
-
     plt.show()
 
 
-def norm_data(folds):
-    return [preprocessing.normalize(fold, axis=0) for fold in folds]
+def norm_data(folds_neg, folds_pos):
+
+    orig_index_n = get_fold_index(folds_neg)
+    join_neg = np.vstack([fold for fold in folds_neg])
+    orig_index_p = get_fold_index(folds_pos, ini = (join_neg.shape[0]-1))
+    join_pos = np.vstack([fold for fold in folds_pos])
+
+    join = np.concatenate((join_neg, join_pos))
+    join_n = preprocessing.scale(join, axis=0)
+
+    return [join_n[fold_idx] for fold_idx in orig_index_n], [join_n[fold_idx] for fold_idx in orig_index_p]
+
+def get_fold_index(folds, ini=0):
+    orig_index = []
+    for n, fold in enumerate(folds):
+        ini = ini+folds[n-1].shape[0] if n > 0 else ini
+        orig_index.append(list(range(ini,ini+fold.shape[0])))
+    return orig_index
 
 def gp_cross_val(neg_fold, pos_fold):
 
@@ -70,13 +64,13 @@ def gp_cross_val(neg_fold, pos_fold):
         test_pos = pos_fold[i]
 
         x_test = np.concatenate((test_neg, test_pos))
-        y_test = np.append([-1] * test_neg.shape[0], np.ones(test_pos.shape[0]))
+        y_test = np.append(np.zeros(test_neg.shape[0]), np.ones(test_pos.shape[0]))
 
         probs_fold = []
 
         for part in partition(list(range(0,train_neg.shape[0])), 4):
             x = np.concatenate((train_neg[part],train_pos))
-            y = np.append([-1] * len(part),np.ones(len(train_pos)))
+            y = np.append(np.zeros(len(part)), np.ones(len(train_pos)))
             y = y.reshape(-1, 1)
 
             idx = np.random.permutation(len(x))
@@ -127,7 +121,7 @@ def partition (list_in, n):
     return [list_in[i::n] for i in range(n)]
 
 def read_mat(path):
-    mat = scipy.io.loadmat(path)
+    mat = io.loadmat(path)
     negative_ex = mat['Healthy_folds'].flatten()
     positive_ex = mat['Malign_folds'].flatten()
     negative_ex = [negative_ex[i][0] for i in list(range(0,5))]
