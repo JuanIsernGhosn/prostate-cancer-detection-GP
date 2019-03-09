@@ -6,24 +6,59 @@ import gpflow as gp
 import _pickle as cPickle
 import matplotlib.pyplot as plt
 from itertools import product
+import pandas as pd
 
 DATA_PATH = '../Datos.mat'
 
-
 def __main__():
     '''
+    # Load data
     neg_fold, pos_fold = read_mat(DATA_PATH)
+    # Normalize data (Z-Score)
     neg_fold_norm, pos_fold_norm = norm_data(neg_fold, pos_fold)
-
+    
+    
+    # Compute GP with Gaussian kernel (RBF)
     roc_gaussian = gp_cross_val(neg_fold_norm, pos_fold_norm, krnl="Gaussian")
-    write_data(roc_gaussian, "auc_gaussian.pkl")
-
+    #write_data(roc_gaussian, "auc_gaussian.pkl")
+    
+    
+    # Compute GP with Linear kernel (RBF)
     roc_linear = gp_cross_val(neg_fold_norm, pos_fold_norm, krnl="Linear")
-    write_data(roc_linear, "auc_linear.pkl")
+    #write_data(roc_linear, "auc_linear.pkl")
     '''
 
-    auc_linear = read_data("auc_gaussian.pkl")
-    plot_cm_grid(auc_linear.get("cm"), title='Núcleo Gaussiano')
+    roc_gaussian = read_data("auc_gaussian.pkl")
+    roc_linear = read_data("auc_linear.pkl")
+
+    # Plot ROC curves
+    plot_roc(roc_gaussian.get('one_minus_specificity'), roc_gaussian.get('recall_1'),
+             roc_gaussian.get('one_m_spe_recall_auc'), title = 'ROC Núcleo Gaussiano',
+             x_label = '1 - Especificidad', y_label = "Sensibilidad")
+    # Plot precision - recall curves
+    plot_roc(roc_gaussian.get('recall_2'), roc_gaussian.get('precision'),
+             roc_gaussian.get('prec_rec_auc'), title='ROC Núcleo Gaussiano',
+             x_label="Sensibilidad", y_label="Precisión")
+
+
+    #plot_cm_grid(roc_gaussian.get("cm"), title='Núcleo Gaussiano')
+    #plot_metrics_table(cms = auc_linear.get("cm"), title='Núcleo Gaussiano')
+
+def plot_metrics_table(cms, title):
+    # Define metrics dictionary
+    d = {'Accuracy': [], 'Specificity': [], 'Recall': [], 'Precision': [], 'F_Score': []}
+    # Iterate over confusion matrix set
+    for cm in cms:
+        # Get confusion matrix elements and compute metrics
+        tn, fp, fn, tp = cm.ravel()
+        recall = tp / (tp + fn)
+        precision = tp / (tp + fp)
+        d.get('Accuracy').append((tp + tn) / (tp + fn + fp + tn))
+        d.get('Specificity').append(tn / (tn + fp))
+        d.get('Recall').append(recall)
+        d.get('Precision').append(precision)
+        d.get('F_Score').append((2 * precision * recall) / (precision + recall))
+    return(pd.DataFrame(data=d))
 
 def plot_cm_grid(cms, title):
     size = 321
@@ -75,10 +110,17 @@ def plot_confusion_matrix(cm, target_names=['0', '1'], title='Confusion matrix',
     plt.ylabel('Etiqueta real')
     plt.xlabel('Etiqueta predicha')
 
-def plot_roc(fpr_folds, tpr_folds):
+def plot_roc(x, y, roc_auc, title, x_label, y_label):
     plt.figure()
-    for fpr, tpr in zip(fpr_folds, tpr_folds):
-        plt.plot(fpr, tpr)
+    for i in list(range(len(x))):
+        plt.plot(x[i], y[i], label='Fold {0} (área = {1:0.2f})'.format(i, roc_auc[i]))
+    plt.plot([0, 1], [0, 1], 'k--')
+    plt.xlim([-0.01, 1.0])
+    plt.ylim([0.0, 1.01])
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
+    plt.legend(loc="lower right")
+    plt.title('Curva '+title)
     plt.show()
 
 
