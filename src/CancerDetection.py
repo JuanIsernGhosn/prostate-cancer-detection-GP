@@ -11,38 +11,53 @@ import pandas as pd
 DATA_PATH = '../Datos.mat'
 
 def __main__():
-    '''
+
     # Load data
     neg_fold, pos_fold = read_mat(DATA_PATH)
     # Normalize data (Z-Score)
     neg_fold_norm, pos_fold_norm = norm_data(neg_fold, pos_fold)
     
-    
     # Compute GP with Gaussian kernel (RBF)
     roc_gaussian = gp_cross_val(neg_fold_norm, pos_fold_norm, krnl="Gaussian")
-    #write_data(roc_gaussian, "auc_gaussian.pkl")
-    
+    write_data(roc_gaussian, "auc_gaussian.pkl")
     
     # Compute GP with Linear kernel (RBF)
     roc_linear = gp_cross_val(neg_fold_norm, pos_fold_norm, krnl="Linear")
-    #write_data(roc_linear, "auc_linear.pkl")
-    '''
+    write_data(roc_linear, "auc_linear.pkl")
 
+    # Read data (If is already generated)
     roc_gaussian = read_data("auc_gaussian.pkl")
     roc_linear = read_data("auc_linear.pkl")
 
+
+    # ---- Gaussian Kernel ----
+    # Plot confusion matrix
+    plot_cm_grid(roc_gaussian.get("cm"), title='Núcleo Gaussiano')
     # Plot ROC curves
     plot_roc(roc_gaussian.get('one_minus_specificity'), roc_gaussian.get('recall_1'),
-             roc_gaussian.get('one_m_spe_recall_auc'), title = 'ROC Núcleo Gaussiano',
-             x_label = '1 - Especificidad', y_label = "Sensibilidad")
-    # Plot precision - recall curves
+             roc_gaussian.get('one_m_spe_recall_auc'), title='ROC Núcleo Gaussiano',
+             x_label='1 - Especificidad', y_label="Sensibilidad")
+    # Plot precision/recall curves
     plot_roc(roc_gaussian.get('recall_2'), roc_gaussian.get('precision'),
-             roc_gaussian.get('prec_rec_auc'), title='ROC Núcleo Gaussiano',
+             roc_gaussian.get('prec_rec_auc'), title='Precisión-Sensibilidad Núcleo Gaussiano',
              x_label="Sensibilidad", y_label="Precisión")
+    # Plot metrics table
+    print(plot_metrics_table(cms=roc_gaussian.get("cm"), title='Núcleo Gaussiano'))
 
+    # ---- Linear Kernel ----
+    # Plot confusion matrix
+    plot_cm_grid(roc_linear.get("cm"), title='Núcleo Lineal')
+    # Plot ROC curves
+    plot_roc(roc_linear.get('one_minus_specificity'), roc_linear.get('recall_1'),
+             roc_linear.get('one_m_spe_recall_auc'), title='ROC Núcleo Lineal',
+             x_label='1 - Especificidad', y_label="Sensibilidad")
+    # Plot precision/recall curves
+    plot_roc(roc_linear.get('recall_2'), roc_linear.get('precision'),
+             roc_linear.get('prec_rec_auc'), title='Precisión-Sensibilidad Núcleo Lineal',
+             x_label="Sensibilidad", y_label="Precisión")
+    # Plot metrics table
+    print(plot_metrics_table(cms=roc_linear.get("cm"), title='Núcleo Lineal'))
 
-    #plot_cm_grid(roc_gaussian.get("cm"), title='Núcleo Gaussiano')
-    #plot_metrics_table(cms = auc_linear.get("cm"), title='Núcleo Gaussiano')
 
 def plot_metrics_table(cms, title):
     # Define metrics dictionary
@@ -62,7 +77,7 @@ def plot_metrics_table(cms, title):
 
 def plot_cm_grid(cms, title):
     size = 321
-    plt.figure(figsize=(10, 10))
+    plt.figure(figsize=(8, 8))
     plt.suptitle('Matrices de confusión: '+title)
     for i, cm in enumerate(cms):
         plt.subplot(size + i)
@@ -113,14 +128,14 @@ def plot_confusion_matrix(cm, target_names=['0', '1'], title='Confusion matrix',
 def plot_roc(x, y, roc_auc, title, x_label, y_label):
     plt.figure()
     for i in list(range(len(x))):
-        plt.plot(x[i], y[i], label='Fold {0} (área = {1:0.2f})'.format(i, roc_auc[i]))
+        plt.plot(x[i], y[i], label='Fold {0} (área = {1:0.2f})'.format(i+1, roc_auc[i]))
     plt.plot([0, 1], [0, 1], 'k--')
     plt.xlim([-0.01, 1.0])
     plt.ylim([0.0, 1.01])
     plt.xlabel(x_label)
     plt.ylabel(y_label)
     plt.legend(loc="lower right")
-    plt.title('Curva '+title)
+    plt.title('Curvas '+title)
     plt.show()
 
 
@@ -224,7 +239,7 @@ def write_data(data, path):
         (Object): Object to be saved.
     """
     with open(path, 'wb') as fid:
-        cPickle.dump(data, fid)
+        cPickle.dump(data, fid, protocol = 2)
 
 
 def partition(list_in, n):
