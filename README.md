@@ -8,6 +8,23 @@ Concretamente, para esta práctica se provee de un conjunto de datos de 1014 im�
 
 Para llevar a cabo la clasificación de los datos de las imágenes, se utilizará el algoritmo de procesos gaussianos, que cuyo funcionamiento será definido en este informe, previamente a la presentación de los resultados obtenidos mediante este en el conjunto de datos. Así, uno de los principales retos del problema que aquí se presenta, es la necesidad de lograr la mejor clasificación prosible mediante este algoritmo, sobre un conjunto de datos que se encuentra altamente desbalanceado. Por ello y para cada uno de los *folds* de la clase mayoritaria (clase negativa) de la validación cruzada a realizar, tomaremos la totalidad de datos de la clase positiva a fin de balancear las observaciones de cada clase en los modelos a entrenar. 
 
+- [Detección de cancer en imágenes histológicas de próstata](#detección-de-cancer-en-imágenes-histológicas-de-próstata)
+  * [¿Qué es un proceso gaussiano?](#qué-es-un-proceso-gaussiano)
+  * [Software utilizado para la realización de la práctica](#software-utilizado-para-la-realización-de-la-práctica)
+  * [Resultados experimentales](#resultados-experimentales)
+    + [Kernel Lineal](#kernel-lineal)
+      - [Curva ROC y curva precisión-sensibilidad](#curva-roc-y-curva-precisión-sensibilidad)
+      - [Matrices de confusión](#matrices-de-confusión)
+      - [Métricas por fold](#métricas-por-fold)
+      - [Comentario de los resultados para kernel lineal](#comentario-de-los-resultados-para-kernel-lineal)
+    + [Kernel Gaussiano](#kernel-gaussiano)
+    + [Curva ROC y curva precisión-sensibilidad](#curva-roc-y-curva-precisión-sensibilidad-1)
+      - [Matrices de confusión](#matrices-de-confusión-1)
+      - [Métricas por fold](#métricas-por-fold-1)
+      - [Comentario de los resultados para el kernel gaussiano](#comentario-de-los-resultados-para-el-kernel-gaussiano)
+  * [¿Cómo se clasificaría un nuevo dato?](#cómo-se-clasificaría-un-nuevo-dato)
+  * [Diseño de experimento adicional](#diseño-de-experimento-adicional)
+
 ## ¿Qué es un proceso gaussiano?
 Un proceso gaussiano consiste en una colección (potencialmente infinita) de variables aleatorias, cada una de las
 cuales sigue una distribución normal, para las que dado cualquier subconjunto finito de las mismas, este sigue una distribución normal multivariante. 
