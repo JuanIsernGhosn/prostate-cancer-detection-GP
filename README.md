@@ -2,7 +2,8 @@
 # Detección de cancer en imágenes histológicas de próstata
 Este informe se corresponde con el documento resultante tras la práctica de procesos gaussianos para la **clasificación de imágenes histológicas de próstata, de acuerdo a la existencia o no de cáncer**. Esta práctica se enmarca en el *Tema 9: Modelos para regresión*, de la asignatura *Extracción en características en Imágenes*, del master de Ciencia de Datos e Ingeniería de Computadores (DATCOM), de la Universidad de Granada.
 
-![alt text](img/histologic_img.png "Imágenes de tejido sano (panel superior) y de tejido cancerígeno (panel inferior)")
+![alt text](img/histologic_img.png)
+**Imágenes de tejido sano (panel superior) y de tejido cancerígeno (panel inferior)**
 
 Concretamente, para esta práctica se provee de un conjunto de datos de 1014 imágenes provenientes de tejido sano y 298 de tejido cancerígeno, de las cuales han sido extraídos 10 descriptores. En este conjunto de datos ya vienen predeterminados los folds a utilizar en la validación cruzada, de forma que los datos se encuentran en una primera instancia divididos de acuerdo a su clase y posteriormente cada una de ellas en 5 conjuntos de similar tamaño, cada uno representativo de un *fold* de la validación cruzada.
 
