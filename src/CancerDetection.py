@@ -1,4 +1,4 @@
-from scipy import io, stats
+from scipy import io
 import numpy as np
 from sklearn import metrics, preprocessing
 import random
@@ -152,7 +152,7 @@ def plot_roc(x, y, roc_auc, title, x_label, y_label):
     plt.figure()
     for i in list(range(len(x))):
         plt.plot(x[i], y[i], label='Fold {0} (área = {1:0.2f})'.format(i + 1, roc_auc[i]))
-    plt.plot([0, 1], [0, 1], 'k--')
+    #plt.plot([0, 1], [0, 1], 'k--')
     plt.xlim([-0.01, 1.0])
     plt.ylim([0.0, 1.01])
     plt.xlabel(x_label)
