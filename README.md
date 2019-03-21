@@ -2,11 +2,29 @@
 # Detección de cancer en imágenes histológicas de próstata
 Este informe se corresponde con el documento resultante tras la práctica de procesos gaussianos para la **clasificación de imágenes histológicas de próstata, de acuerdo a la existencia o no de cáncer**. Esta práctica se enmarca en el *Tema 9: Modelos para regresión*, de la asignatura *Extracción en características en Imágenes*, del master de Ciencia de Datos e Ingeniería de Computadores (DATCOM), de la Universidad de Granada.
 
-![alt text](img/histologic_img.png "Imágenes de tejido sano (panel superior) y de tejido cancerígeno (panel inferior)")
+![alt text](img/histologic_img.png)
+**Imágenes de tejido sano (panel superior) y de tejido cancerígeno (panel inferior)**
 
 Concretamente, para esta práctica se provee de un conjunto de datos de 1014 imágenes provenientes de tejido sano y 298 de tejido cancerígeno, de las cuales han sido extraídos 10 descriptores. En este conjunto de datos ya vienen predeterminados los folds a utilizar en la validación cruzada, de forma que los datos se encuentran en una primera instancia divididos de acuerdo a su clase y posteriormente cada una de ellas en 5 conjuntos de similar tamaño, cada uno representativo de un *fold* de la validación cruzada.
 
 Para llevar a cabo la clasificación de los datos de las imágenes, se utilizará el algoritmo de procesos gaussianos, que cuyo funcionamiento será definido en este informe, previamente a la presentación de los resultados obtenidos mediante este en el conjunto de datos. Así, uno de los principales retos del problema que aquí se presenta, es la necesidad de lograr la mejor clasificación prosible mediante este algoritmo, sobre un conjunto de datos que se encuentra altamente desbalanceado. Por ello y para cada uno de los *folds* de la clase mayoritaria (clase negativa) de la validación cruzada a realizar, tomaremos la totalidad de datos de la clase positiva a fin de balancear las observaciones de cada clase en los modelos a entrenar. 
+
+- [Detección de cancer en imágenes histológicas de próstata](#detección-de-cancer-en-imágenes-histológicas-de-próstata)
+  * [¿Qué es un proceso gaussiano?](#qué-es-un-proceso-gaussiano)
+  * [Software utilizado para la realización de la práctica](#software-utilizado-para-la-realización-de-la-práctica)
+  * [Resultados experimentales](#resultados-experimentales)
+    + [Kernel Lineal](#kernel-lineal)
+      - [Curva ROC y curva precisión-sensibilidad](#curva-roc-y-curva-precisión-sensibilidad)
+      - [Matrices de confusión](#matrices-de-confusión)
+      - [Métricas por fold](#métricas-por-fold)
+      - [Comentario de los resultados para kernel lineal](#comentario-de-los-resultados-para-kernel-lineal)
+    + [Kernel Gaussiano](#kernel-gaussiano)
+    + [Curva ROC y curva precisión-sensibilidad](#curva-roc-y-curva-precisión-sensibilidad-1)
+      - [Matrices de confusión](#matrices-de-confusión-1)
+      - [Métricas por fold](#métricas-por-fold-1)
+      - [Comentario de los resultados para el kernel gaussiano](#comentario-de-los-resultados-para-el-kernel-gaussiano)
+  * [¿Cómo se clasificaría un nuevo dato?](#cómo-se-clasificaría-un-nuevo-dato)
+  * [Diseño de experimento adicional](#diseño-de-experimento-adicional)
 
 ## ¿Qué es un proceso gaussiano?
 Un proceso gaussiano consiste en una colección (potencialmente infinita) de variables aleatorias, cada una de las
@@ -112,7 +130,7 @@ Tras haber entrenado los modelos cuyos resultados se han mostrado anteriormente,
     3. La selección de la clase a considerar como la predicha por el sistema se realizará eligiendo aquella que más veces aparece en el vector de clases de salida de cada uno de nuestros clasificadores. Así, nuestra propuesta de multiclasificador resultaría del consenso o votación de los clasificadores procesos gaussianos parciales.
 
 ## Diseño de experimento adicional
-En esta práctica hemos utilizado bagging para balancear las clases. **Tenemos 1014 y 298 ejemplos sanos y cancerígenos, respectivamente**. Una duda que se plantea es la búsqueda de otra alternativa para aumentar el número de ejemplos positivos para balancear los datos. Así en este trabajo además de la alternativa de bagging, se propone utilizar SMOTE o algunas de las implementaciones similares a este algoritmo, como por ejemplo ADASYN como método para equilibrar el número de muestras de la clase positiva al de clase negativa. Así, la responsabilidad del balanceo de las clases pasa del algoritmo de partición de datos y generación de algoritmos (en nuestro caso bagging), que simula para cada modelo una situación de igualdad de datos de cada clase, a ahora residir en el preprocesamiento, que haciendo uso de la distribución de los datos observados generará otras muestras que se adecuen a las mismas características.
+En esta práctica hemos utilizado bagging para balancear las clases. **Tenemos 1014 y 298 ejemplos sanos y cancerígenos, respectivamente**. Una duda que se plantea es la búsqueda de otra alternativa para aumentar el número de ejemplos positivos para balancear los datos. Así en este trabajo además de la alternativa de bagging, se propone utilizar SMOTE o algunas de las implementaciones similares a este algoritmo, como por ejemplo ADASYN como método para equilibrar el número de muestras de la clase positiva al de clase negativa. Así, la responsabilidad del balanceo de las clases pasa del algoritmo de partición de datos y generación de modelos (en nuestro caso bagging), que simula para cada modelo una situación de igualdad de datos de cada clase, a ahora residir en el preprocesamiento, que haciendo uso de la distribución de los datos observados generará otras muestras que se adecúen a las mismas características.
 
 Es cierto que la generación de datos artificiales puede tener inconvenientes, como la poca representatividad de los mismo, haciendo que estos no pertenezcan a la distribución que subyace en el dominio de los datos reales. Por ello, una primera alternativa que se tuvo en consideración fue llevar a cabo un undersampling, que si bien cumple el requisito fundamental de que las clases de los datos resultantes se encontrarán balanceadas, por contra tiene la pega de que se disminuye la cantidad de datos con la que entrenar nuestro modelo, con lo que pueden haber ciertos aspectos del dominio de nuestros datos que no queden cubiertos y nos lleve casi con total seguridad a una peor clasificación. 
 
